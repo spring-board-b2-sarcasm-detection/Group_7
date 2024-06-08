@@ -1,0 +1,50 @@
+import pandas as pd
+import re
+import nltk
+from nltk.corpus import stopwords
+
+# Ensure stopwords are downloaded
+nltk.download('stopwords')
+
+# Load the training data
+train_data = pd.read_csv('train.csv', low_memory=False)
+
+# Remove rows with missing values and duplicates
+train_data = train_data.dropna().drop_duplicates()
+
+# Select only the necessary columns
+train_data = train_data[['label', 'comment']]
+
+# Function to clean text
+def clean_comment(text):
+    # Remove HTML tags
+    text = re.sub(r'<[^>]+>', '', text)
+    
+    # Remove non-alphanumeric characters
+    text = re.sub(r'[^a-zA-Z0-9\s]', '', text)
+    
+    # Convert to lowercase
+    text = text.lower()
+    
+    # Remove stop words
+    stop_words = set(stopwords.words('english'))
+    text = ' '.join(word for word in text.split() if word not in stop_words)
+    
+    return text
+
+# Apply text cleaning function to comments
+train_data['cleaned_comment'] = train_data['comment'].apply(clean_comment)
+
+# Balance the dataset
+label_counts = train_data['label'].value_counts()
+min_label_count = label_counts.min()
+
+# Sample to balance the dataset
+balanced_data = train_data.groupby('label').apply(lambda x: x.sample(min_label_count)).reset_index(drop=True)
+
+# Save the cleaned and balanced dataset
+balanced_data.to_csv('cleaned_balanced_train_data.csv', index=False)
+
+# Display the first few rows of the cleaned and balanced dataset
+print("Cleaned and Balanced Training Data:")
+print(balanced_data.head())
