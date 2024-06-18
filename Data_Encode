@@ -1,0 +1,30 @@
+import pandas as pd
+from sklearn.preprocessing import OneHotEncoder
+
+# Load your cleaned dataset
+data = pd.read_csv('cleaned_dataset.csv')
+
+# Display the first few rows of the dataset
+print(data.head())
+
+# Identify the categorical columns to be encoded
+categorical_columns = ['column1', 'column2', 'column3']  # Replace with your actual categorical columns
+
+# Initialize OneHotEncoder
+encoder = OneHotEncoder(sparse=False, drop='first')  
+
+# Fit and transform the data
+encoded_array = encoder.fit_transform(data[categorical_columns])
+
+# Convert the encoded array back to a DataFrame
+encoded_df = pd.DataFrame(encoded_array, columns=encoder.get_feature_names_out(categorical_columns))
+
+# Drop the original categorical columns and concatenate the encoded columns
+data = data.drop(categorical_columns, axis=1)
+encoded_data = pd.concat([data, encoded_df], axis=1)
+
+# Display the first few rows of the encoded dataset
+print(encoded_data.head())
+
+# Save the encoded dataset if needed
+encoded_data.to_csv('encoded_dataset.csv', index=False)
